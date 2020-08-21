@@ -1,0 +1,19 @@
+RewriteEngine On
+
+RewriteBase /
+DirectoryIndex index.php
+
+RedirectMatch 403 ^.*/.git$
+
+# FORCE www
+#RewriteCond %{HTTP_HOST} ^yourdomain.com [NC]
+#RewriteRule ^(.*)$ http://www.yourdomain.com/$1 [L,R=301]
+
+# FORCE https
+#RewriteCond %{HTTPS} off
+#RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# direct all non-file requests to the controller
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-l
+RewriteRule . /index.php [L]
