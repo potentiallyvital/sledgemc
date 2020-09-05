@@ -52,69 +52,27 @@ include SLEDGEMC_PATH.'/views/main/troll.txt';
                 <div id="bg-hide" style="position:fixed;top:0;bottom:0;left:0;right:0;z-index:2;">
                 </div>
                 <div id="one-hundred-vh">
-                        <div id="top-spacer" class="hidden-md-down">
-                                <div>
-                                </div>
+                        <div id="header">
+				[header]
                         </div>
                         <div id="main-content" class="container-wide grid show-left-nav">
                                 <div id="main-page" class="row">
                                         <div id="left-box" class="col-md-6 col-lg-4 col-xl-3 pull-left">
-                                                <br class="hidden-md-down" />
-                                                <br class="hidden-md-down" />
                                                 <div id="left-box-contents">
 							[left box]
-                                                        <?=$left_box;?>
                                                 </div>
-						<div id="left-box-bottom"></div>
                                         </div>
                                         <div id="middle-box" class="col-md-12 col-lg-8 col-xl-6">
                                                 <div class="page-content">
-                                                        <div class="panel">
-                                                                <div class="panel-heading">
-                                                                        <h1><?=$title;?></h1>
-                                                                </div>
-								<div class="panel-body text-grey top-nav">
-									[top nav]
-								</div>
-                                                                <div class="panel-body" id="innards">
-                                                                        <?=$innards;?>
-                                                                </div>
-								<div class="panel-body text-grey bottom-nav hidden">
-									[bottom nav]
-								</div>
-                                                        </div>
-							<div class="panel no-heading hidden" id="second-page">
-								<div class="panel-body" id="second-innards">
-								</div>
-							</div>
+							[page content]
+							<?=$innards;?>
                                                 </div>
-                                        </div>
-                                        <div id="right-box" class="col-md-6 col-lg-2 col-xl-3 pull-right">
-                                                <br class="hidden-md-down" />
-                                                <br class="hidden-md-down" />
-                                                <div id="right-box-contents">
-							[right box]
-                                                        <?=$right_box;?>
-                                                </div>
-						<div id="right-box-bottom"></div>
                                         </div>
                                 </div>
                         </div>
-                        <div id="bottom-spacer" class="hidden-md-down">
-                                <div>
-                                </div>
-                        </div>
                 </div>
-                <div id="bottom-box">
-                        <div id="header">
-				[another box]
-                        </div>
-                </div>
-                <hr style="margin:0px;" />
                 <div id="footer">
-                        <a id="logo" href="<?=BASE_URL;?>">
-                                <h1><?=SLEDGEMC_APP;?></h1>
-                        </a>
+			[footer]
                 </div>
         </body>
 </html>

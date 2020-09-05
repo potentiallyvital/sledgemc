@@ -2,14 +2,14 @@
 
 class MainController extends Controller
 {
-        /**
-         * visitors can access main controller
-         */
+	/**
+	 * everyone can view the main controller
+	 */
         function verify()
         {
-                return true;
+		return true;
         }
-
+	
         /**
          * the default method, if no other controller/method is found
          */

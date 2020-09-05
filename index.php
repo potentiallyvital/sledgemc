@@ -1,10 +1,5 @@
 <?php
 
-if (empty($_SESSION))
-{
-        session_start();
-}
-
 require 'config.php';
 
 if (!empty($_SERVER['HTTP_HOST']))
