@@ -1,9 +1,9 @@
 <?php
 
-$db_type = (!empty($argv[1]) ? $argv[1] : 'postgres');
+$db_type = (!empty($argv[1]) ? $argv[1] : '');
 if (!in_array($db_type, ['postgres','mysql']))
 {
-	die("\r\nusage : php run_hammer.php <postgres/mysql>\r\n");
+	die("\r\nusage : php run_hammer.php <postgres/mysql>\r\n\r\n");
 }
 
 $skip_auto_include = true;

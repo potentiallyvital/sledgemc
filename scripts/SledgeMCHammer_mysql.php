@@ -155,7 +155,7 @@ class SledgeMCHammer
                         $className = self::camelCase($table);
 
                         $main_file = $path.'/'.$className.'.php';
-                        $helper_file = $path.'/helpers/'.$className.'Helper.php';
+                        #$helper_file = $path.'/helpers/'.$className.'Helper.php';
                         $base_file = $path.'/base/'.$className.'Base.php';
 
                         if (!file_exists($main_file))
@@ -164,11 +164,11 @@ class SledgeMCHammer
                                 self::saveFile($main_file, self::getClass($table));
                         }
 
-                        if (!file_exists($helper_file))
-                        {
-                                echo "\r\nNEW - {$helper_file}";
-                                self::saveFile($helper_file, self::getHelperClass($table));
-                        }
+                        #if (!file_exists($helper_file))
+                        #{
+                        #        echo "\r\nNEW - {$helper_file}";
+                        #        self::saveFile($helper_file, self::getHelperClass($table));
+                        #}
 
                         if (!file_exists($base_file))
                         {
@@ -208,11 +208,11 @@ class SledgeMCHammer
         static function getTables($include_inherited = true)
         {
                 $tables = [];
-                $sql = "SELECT * FROM information_schema.tables WHERE table_schema = 'public'";
+                $sql = "SELECT * FROM information_schema.tables WHERE table_schema = '".SLEDGEMC_NAME."'";
                 $link = self::query($sql);
                 while ($row = self::query($sql, $link))
                 {
-                        $tables[$row['table_name']] = [];
+                        $tables[$row['TABLE_NAME']] = [];
                 }
                 foreach ($tables as $table => $columns)
                 {
@@ -222,7 +222,7 @@ class SledgeMCHammer
                                 $parent = self::getParentTable($table);
                                 if ($parent)
                                 {
-                                        $sql = "SELECT * FROM information_schema.columns WHERE table_name = '$parent' AND table_schema = 'public'";
+                                        $sql = "SELECT * FROM information_schema.columns WHERE table_name = '$parent' AND table_schema = '".SLEDGEMC_NAME."'";
                                         $link = self::query($sql);
                                         while ($row = self::query($sql, $link))
                                         {
@@ -230,41 +230,33 @@ class SledgeMCHammer
                                         }
                                 }
                         }
-                        $sql = "SELECT * FROM information_schema.columns WHERE table_name = '$table' AND table_schema = 'public'";
+                        $sql = "SELECT * FROM information_schema.columns WHERE table_name = '$table' AND table_schema = '".SLEDGEMC_NAME."'";
                         $link = self::query($sql);
                         while ($row = self::query($sql, $link))
                         {
-                                $name = strtolower($row['column_name']);
+                                $name = strtolower($row['COLUMN_NAME']);
                                 if (in_array($name, $inherited))
                                 {
                                         continue;
                                 }
-                                $type = $row['data_type'];
-                                $config = (!empty($type_parts) ? str_replace(')', '', array_pop($type_parts)) : 'null');
+                                $type_parts = $row['COLUMN_TYPE'];
+				$type_parts = explode('(', $type_parts);
+				$type = array_shift($type_parts);
+				$config = str_replace(')', '', (!empty($type_parts) ? array_shift($type_parts) : null));
                                 switch ($type)
                                 {
+					case 'int':
                                         case 'smallint':
-                                                $config = '5';
-                                                break;
-                                        case 'integer':
-                                                $config = '11';
-                                                break;
                                         case 'bigint':
-                                                $config = '20';
-                                                break;
-                                        case 'numeric':
-                                                $config = $row['numeric_precision'].', '.$row['numeric_scale'];
+                                                $config = $row['NUMERIC_PRECISION'];
                                                 break;
                                         case 'text':
-                                        case 'bytea':
-                                        case 'jsonb':
                                         case 'date':
-                                        case 'timestamp without time zone':
+					case 'datetime':
+					case 'timestamp':
                                                 $config = '';
                                                 break;
-                                        case 'character':
-                                        case 'character varying':
-                                                $config = $row['character_maximum_length'];
+					case 'varchar':
                                                 break;
                                         default:
                                                 die("UNKNOWN COLUMN TYPE '$type' IN ".__FILE__." LINE ".__LINE__."\r\n");
@@ -284,7 +276,7 @@ class SledgeMCHammer
                 $columns = [];
                 $sql = "SELECT column_name AS name, data_type AS type
                         FROM information_schema.columns
-                        WHERE table_schema = 'public'
+                        WHERE table_schema = '".SLEDGEMC_NAME."'
                         GROUP BY column_name, data_type
                         ORDER BY column_name, data_type";
                 $link = self::query($sql);
@@ -306,7 +298,7 @@ class SledgeMCHammer
                 $children = [];
                 $sql = "SELECT column_name AS name, data_type AS type, table_name
                         FROM information_schema.columns
-                        WHERE table_schema = 'public' AND column_name LIKE '%_id'
+                        WHERE table_schema = '".SLEDGEMC_NAME."' AND column_name LIKE '%_id'
                         GROUP BY column_name, data_type, table_name
                         ORDER BY column_name";
                 $link = self::query($sql);
@@ -351,14 +343,14 @@ class SledgeMCHammer
                 $row = true;
                 if (!$result)
                 {
-                        $link = pg_connect('host='.SLEDGEMC_HOST.' dbname='.SLEDGEMC_NAME.' user='.SLEDGEMC_USER.' password='.SLEDGEMC_PASS);
-                        $result = pg_query($link, $sql);
+                        $link = mysqli_connect(SLEDGEMC_HOST, SLEDGEMC_USER, SLEDGEMC_PASS, SLEDGEMC_NAME);
+                        $result = mysqli_query($link, $sql);
 
                         return $result;
                 }
                 if ($result !== true && $result !== false)
                 {
-                        $row = pg_fetch_assoc($result);
+                        $row = mysqli_fetch_assoc($result);
                 }
 
                 return $row;
@@ -402,7 +394,7 @@ class SledgeMCHammer
                 $php .= self::eol(2);
                 #$php .= 'require_once SLEDGEMC_PATH.\'/models/helpers/'.$className.'Helper.php\';'.self::eol();
                 #$php .= self::eol();
-                $php .= 'class '.$className.' extends '.$className.'Helper'.self::eol();
+                $php .= 'class '.$className.' extends '.$className.'Base'.self::eol();
                 $php .= '{';
                 $php .= self::eol(2);
                 $php .= '}';
@@ -707,7 +699,7 @@ class SledgeMCHammer
                                 else
                                 {
                                         $files[] = "{$path}/base/{$class}Base.php";
-                                        $files[] = "{$path}/helpers/{$class}Helper.php";
+                                        #$files[] = "{$path}/helpers/{$class}Helper.php";
                                         $files[] = "{$path}/{$class}.php";
                                 }
                         }
