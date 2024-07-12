@@ -3,6 +3,7 @@
 /**
  * base controller class for sledgeMC
  */
+#[\AllowDynamicProperties]
 class BaseController
 {
         /**
@@ -10,8 +11,66 @@ class BaseController
          */
         function __construct($params = [])
         {
-
+		if (substr(get_class($this), -10) == 'Controller')
+		{
+			$GLOBALS['SLEDGEMC'] = $this;
+		}
         }
+
+	/**
+	 * show stuff when we're done
+	 */
+	function __destruct()
+	{
+		#$textareas = []; // uncomment to enable html trimming
+
+		if (!empty($this->views))
+		{
+			$html = implode('', array_reverse($this->views));
+
+			if (isset($textareas))
+			{
+				$new = [];
+				$parts = explode('<textarea ', $html);
+				$new[] = array_shift($parts);
+				foreach ($parts as $i => $part)
+				{
+					$part = explode('</textarea>', $part);
+					$new[] = '<textarea'.$i.'>';
+					$textareas[$i] = '<textarea '.array_shift($part).'</textarea>';
+					$new[] = array_shift($part);
+				}
+
+				$html = implode('', $new);
+			}
+
+			// ajax never needs header/footer
+			if ($this->isAjax())
+			{
+				if (isset($textareas))
+				{
+					$html = str_replace("\t","\r\n",$html);
+					$html = preg_replace('/^\s+|\s+$/m', '', $html);
+					foreach ($textareas as $i => $textarea) { $html = str_replace('<textarea'.$i.'>', $textarea, $html); }
+				}
+				echo $html;
+			}
+			else
+			{
+				// input page html into template and display
+				$this->data['innards'] = $html;
+				$html = $this->viewOnly('/template', true);
+				if (isset($textareas))
+				{
+					$html = str_replace("\t","\r\n",$html);
+					$html = preg_replace('/^\s+|\s+$/m', '', $html);
+					foreach ($textareas as $i => $textarea) { $html = str_replace('<textarea'.$i.'>', $textarea, $html); }
+				}
+
+				echo $html;
+			}
+		}
+	}
 
         /**
          * is this a proper ajax request?
@@ -193,7 +252,11 @@ class BaseController
          */
         function refresh()
         {
-                header('Location: '.BASE_URL.$_SERVER['REQUEST_URI']);
+		$url = BASE_URL.$_SERVER['REQUEST_URI'];
+		$url = explode('?', $url);
+		$url = array_shift($url);
+
+                header('Location: '.$url);
                 exit;
         }
 
@@ -211,14 +274,9 @@ class BaseController
                 $page = ob_get_contents();
                 ob_end_clean();
 
-                $this->data['innards'] = $page;
-
-                $html = $this->viewOnly('/template', true);
-
-		// clean up html, remove whitespace
-                #$html = preg_replace('/^\s+|\s+$/m', '', $html);
-
-                echo $html;
+		// keep track of all views
+		// we'll show them at the end
+		$this->views[] = $page;
         }
 
 	/**
@@ -286,4 +344,32 @@ class BaseController
                         return $contents;
                 }
         }
+
+	/**
+	 * get the controller instance
+	 */
+	static function getInstance()
+	{
+		if (!empty($GLOBALS['SLEDGEMC']))
+		{
+			return $GLOBALS['SLEDGEMC'];
+		}
+		else
+		{
+			return new BaseController();
+		}
+	}
+
+	/**
+	 * switch to a new controller
+	 */
+	function switchController($model)
+	{
+		$controller = new $model();
+		foreach (get_object_vars($this) as $key => $value)
+		{
+			$controller->$key = $value;
+		}
+		return $controller;
+	}
 }
