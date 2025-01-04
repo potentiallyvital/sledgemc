@@ -1,39 +1,100 @@
 <?php
+require __DIR__.'/config.php';
 
-require 'config.php';
+$table = (isset($argv[1]) ? $argv[1] : null);
+$columns = $argv;
+array_shift($columns);
+array_shift($columns);
 
 $indexes = [];
-$indexes['sessions'][] = ['session_key'];
-$indexes['game_user'][] = ['email'];
+if ($table)
+{
+	// make specific indexes specified in args
+	$tables = [['table_name'=>$table]];
 
-$sql = "SELECT * FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name";
-$tables = selectAll($sql);
+	if ($columns)
+	{
+		$indexes[$table][] = $columns;
+	}
+}
+else
+{
+	// load up all tables
+	$sql = "SELECT * FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name";
+	$tables = selectAll($sql);
+}
+
+// make default indexes
 foreach ($tables as $table)
 {
-        $table = $table['table_name'];
+	$table = $table['table_name'];
 
-        $indexes[$table][] = ['id'];
-        $indexes[$table][] = ['parent_id'];
-        $indexes[$table][] = ['id','parent_id'];
-        $indexes[$table][] = ['id','deleted'];
-	$indexes[$table][] = ['parent_id','deleted'];
-	$indexes[$table][] = ['parent_id','name'];
-        $indexes[$table][] = ['name'];
+	$indexes[$table][] = ['id'];
 
-	if (substr($table, 0, 4) == 'game' || $table == 'map')
+	switch ($table)
 	{
-		$indexes[$table][] = ['z','y','x'];
+		case 'children':
+			$indexes[$table][] = ['parent_id'];
+			$indexes[$table][] = ['child_id'];
+			$indexes[$table][] = ['parent_id','child_id'];
+			$indexes[$table][] = ['parent_id','child_class'];
+			break;
+		case 'login':
+			$indexes[$table][] = ['email'];
+			break;
+		case 'role':
+			$indexes[$table][] = ['name'];
+			$indexes[$table][] = ['code'];
+			break;
 	}
 }
 
-foreach ($indexes as $table => $table_indexes)
+// ignore existing indexes
+$existing = [];
+foreach (selectAll("SELECT * FROM pg_indexes WHERE schemaname = 'public'") as $row)
 {
-        foreach ($table_indexes as $index_columns)
-        {
-                $index = $table.'_'.implode('_', $index_columns).'_index';
-                $columns = implode(',', $index_columns);
+	$table = $row['tablename'];
 
-                $sql = "CREATE INDEX IF NOT EXISTS {$index} ON {$table} ({$columns})";
-		echo "$sql;\r\n";
-        }
+	$cols = $row['indexdef'];
+	$cols = explode('(', $cols);
+	$cols = array_pop($cols);
+	$cols = explode(')', $cols);
+	$cols = array_shift($cols);
+	$cols = explode(',', $cols);
+	$cols = array_map('trim', $cols);
+
+	$columns = implode(',', $cols);
+	$index = 'idx_'.md5($table.'-'.$columns);
+
+	if ($row['indexname'] != $index)
+	{
+		execute("ALTER INDEX {$row['indexname']} RENAME TO {$index}");
+	}
+
+	$existing[$index] = $row;
+}
+
+// make em
+$made = false;
+foreach ($indexes as $table => $col_indexes)
+{
+	foreach ($col_indexes as $cols)
+	{
+		$columns = implode(',', $cols);
+		$index = 'idx_'.md5($table.'-'.$columns);
+
+		if (empty($existing[$index]))
+		{
+			$sql = "CREATE INDEX IF NOT EXISTS {$index} ON {$table} ({$columns})";
+			echo $sql.";\r\n";
+			execute($sql);
+
+			$made = true;
+		}
+	}
+}
+
+if (!$made)
+{
+	echo "Indexes look good!\r\n";
 }

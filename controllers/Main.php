@@ -5,165 +5,144 @@ class MainController extends Controller
 	/**
 	 * everyone can view the main controller
 	 */
-        function verify()
-        {
+	function verify($method)
+	{
 		return true;
-        }
-	
-        /**
-         * the default method, if no other controller/method is found
-         */
-        function index($controller = null, $method = null, $param = null)
-        {
-                if ($controller && file_exists(SLEDGEMC_PATH.'/views/main/'.$controller.'.php'))
-                {
-                        $this->data['title'] = deslugify($controller);
+	}
 
-                        $this->view($controller);
-                }
-                elseif ($this->user)
-                {
-                        $this->redirect('home');
-                }
-                else
-                {
-                        $this->data['title'] = SLEDGEMC_TITLE;
-
-                        $this->view('index');
-                }
-        }
-
-        /**
-         * login page and post handling
-         */
-        function login()
-        {
-                $email = strtolower(post('login_email'));
-                $password = post('login_keyword');
-                if ($email)
-                {
-                        $user = GameUser::selectOne("SELECT * FROM game_user WHERE email ILIKE '{$email}' OR name ILIKE '{$email}'");
-                        if ($user)
-                        {
-                                $hash = $user->getHashedPassword($password);
-				if (empty($user->password))
+	/**
+	 * login page and post handling
+	 */
+	function login()
+	{
+		$email = strtolower(post('sledge_login_email'));
+		$password = post('sledge_login_keyword');
+		if ($email)
+		{
+			$login = Login::selectOne("SELECT * FROM login WHERE email = '{$email}'");
+			if ($login)
+			{
+				$hash = $login->getHashedPassword($password);
+				if (empty($login->password))
 				{
-					$user->setPassword($password)->save();
+					$login->setPassword($password)->save();
 				}
-                                if ($user->password == $hash || $user->password == $password)
-                                {
-					$user->setAttribute('time_last_login', time());
 
-                                        $this->session->setParent($user)->save();
+				$valid = ($login->password == $hash);
+				$valid_temp = ($login->temporary_pass == $password);
 
-                                        $this->redirect('home');
-                                }
-                        }
+				if ($valid || $valid_temp)
+				{
+					$account = $login->getParent('Account');
 
-                        $this->session->flash('Invalid Credentials');
-                }
+					$this->session->setData('account_id', $account->id);
 
-                $this->view('index');
-        }
+					$this->flash('Welcome back');
 
-        /**
-         * destroy the session
-         */
-        function logout()
-        {
-                if ($this->session)
-                {
-                        $this->session->orphan()->save();
-                }
+					$this->redirect('home');
+				}
+				else
+				{
+					$login->increment('invalid_logins');
+				}
+			}
 
-                $this->redirect('index');
-        }
+			$this->flash('Invalid Credentials');
+		}
 
-        /**
-         * create a new user
-         */
-        function register()
-        {
-                if (post())
-                {
-                        $email = post('register_email');
-                        $username = post('register_username');
-                        $password = post('register_keyword');
-                        $confirm = post('register_confirm');
+		$this->view('index');
+	}
 
-                        $errors = [];
+	/**
+	 * destroy the session
+	 */
+	function logout()
+	{
+		$this->session->setData('account_id', null);
 
-                        $is_npc = ($email == 'npc@potentiallyvital.com');
+		$this->redirect('index');
+	}
 
-                        if (!$is_npc)
-                        {
-                                if (empty($email) || !stristr($email, '.') || !stristr($email, '@') || strlen($email) < 5)
-                                {
-                                        $errors[] = 'A valid email address is required';
-                                }
-                                else
-                                {
-                                        $user = GameUser::getByEmail($email);
-                                        if ($user)
-                                        {
-                                                $errors[] = 'An account with that email address already exists';
-                                        }
-                                }
-                        }
+	/**
+	 * create a new user
+	 */
+	function register()
+	{
+		if (post())
+		{
+			$email = strtolower(post('sledge_register_email'));
+			$username = post('sledge_register_username');
+			$password = post('sledge_register_keyword');
+			$confirm = post('sledge_register_confirm');
 
-                        if (empty($username))
-                        {
-                                $errors[] = 'A username is required';
-                        }
-                        else
-                        {
-                                $user = GameUser::getByName($username);
-                                if ($user)
-                                {
-                                        $errors[] = 'That username is already taken';
-                                }
-                        }
-                        if (empty($password))
-                        {
-                                $errors[] = 'A password is required';
-                        }
-                        elseif ($confirm != $password)
-                        {
-                                $errors[] = 'Passwords do not match';
-                        }
+			$errors = [];
 
-                        if ($errors)
-                        {
-                                foreach ($errors as $error)
-                                {
-                                        $this->session->flash($error);
-                                }
-                        }
-                        else
-                        {
-                                $user = new GameUser();
-                                $user->setName($username);
-                                $user->setEmail($email);
-                                $user->setPassword($password);
+			if (empty($email) || !stristr($email, '.') || !stristr($email, '@') || strlen($email) < 5)
+			{
+				$errors[] = 'A valid email address is required';
+			}
+			else
+			{
+				$user = Account::getByEmail($email);
+				if ($user)
+				{
+					$errors[] = 'An account with that email address already exists';
+				}
+			}
+
+			if (empty($username))
+			{
+				$errors[] = 'A username is required';
+			}
+			else
+			{
+				$user = Account::getByUsername($username);
+				if ($user)
+				{
+					$errors[] = 'That username is already taken';
+				}
+			}
+			if (empty($password))
+			{
+				$errors[] = 'A password is required';
+			}
+			elseif ($confirm != $password)
+			{
+				$errors[] = 'Passwords do not match';
+			}
+
+			if ($errors)
+			{
+				foreach ($errors as $error)
+				{
+					$this->flash($error);
+				}
+			}
+			else
+			{
+				$user = new Account();
+				$user->setUsername($username);
+				$user->setEmail($email);
+				$user->setPassword($password);
 				$user->save();
 
-                                $_POST['login_email'] = $_POST['register_email'];
-                                $_POST['login_keyword'] = $_POST['register_keyword'];
+				$_POST['sledge_login_email'] = $_POST['sledge_register_email'];
+				$_POST['sledge_login_keyword'] = $_POST['sledge_register_keyword'];
 
-                                $this->login();
-                        }
-                }
+				$this->login();
+			}
+		}
 
-                $this->view('index');
-        }
+		$this->view('index');
+	}
 
-        /**
-         * silly people
-         */
-        function wp_admin()
-        {
-                echo '<pre>';
-                include SLEDGEMC_PATH.'/views/main/troll.txt';
-                echo '</pre>';
-        }
+	/**
+	 * silly people
+	 */
+	function wp_admin()
+	{
+		echo '<pre>';
+		include SLEDGEMC_PATH.'/views/main/troll.txt';
+		echo '</pre>';
+	}
 }

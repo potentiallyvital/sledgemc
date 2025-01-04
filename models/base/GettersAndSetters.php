@@ -2,131 +2,170 @@
 
 class GettersAndSetters extends BaseObject
 {
-	function setAge($value = null)
+	function setBody($value = null)
 	{
-		self::set($this, 'age', $value);
-		return $this;
+		return self::set($this, 'body', $value);
 	}
 
-	function getAge($vars = null)
+	function getBody($vars = null)
 	{
-		if (!property_exists($this, 'age'))
+		if (!property_exists($this, 'body'))
 		{
 			return null;
 		}
-		$value = $this->sanitize('age', $this->age);
+		return $this->sanitize('body', $this->body);
+	}
+
+	static function getByBody($value, $first_only = false, $include_deleted = false)
+	{
+		if (!$value || strlen($value) == 0)
+		{
+			return ($first_only ? null : []);
+		}
+		$class = get_called_class();
+		$object = new $class();
+		$sql = "SELECT * FROM $object->table WHERE body = '".str_replace("'", "''", $value)."'";
+		return self::selectAll($sql, $first_only, $include_deleted);
+	}
+
+	function setChildClass($value = null)
+	{
+		return self::set($this, 'child_class', $value);
+	}
+
+	function getChildClass($vars = null)
+	{
+		if (!property_exists($this, 'child_class'))
+		{
+			return null;
+		}
+		return $this->sanitize('child_class', $this->child_class);
+	}
+
+	static function getByChildClass($value, $first_only = false, $include_deleted = false)
+	{
+		if (!$value || strlen($value) == 0)
+		{
+			return ($first_only ? null : []);
+		}
+		$class = get_called_class();
+		$object = new $class();
+		$sql = "SELECT * FROM $object->table WHERE child_class = '".str_replace("'", "''", $value)."'";
+		return self::selectAll($sql, $first_only, $include_deleted);
+	}
+
+	function setChildId($value = null)
+	{
+		return self::set($this, 'child_id', $value);
+	}
+
+	function getChildId($vars = null)
+	{
+		if (!property_exists($this, 'child_id'))
+		{
+			return null;
+		}
+		$value = $this->sanitize('child_id', $this->child_id);
 		if ($vars)
 		{
-			$value = number_format($this->age);
+			$value = number_format($this->child_id);
 		}
 		return $value;
 	}
 
-	static function getByAge($value, $first_only = false, $include_deleted = false)
+	static function getByChildId($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE age = '".str_replace("'", "''", $value)."'";
+		$sql = "SELECT * FROM $object->table WHERE child_id = ".round(preg_replace('/[^-.0-9]/', '', $value))."";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setBacktrace($value = null)
+	function setChildTable($value = null)
 	{
-		self::set($this, 'backtrace', $value);
-		return $this;
+		return self::set($this, 'child_table', $value);
 	}
 
-	function getBacktrace($vars = null)
+	function getChildTable($vars = null)
 	{
-		if (!property_exists($this, 'backtrace'))
+		if (!property_exists($this, 'child_table'))
 		{
 			return null;
 		}
-		return $this->sanitize('backtrace', $this->backtrace);
+		return $this->sanitize('child_table', $this->child_table);
 	}
 
-	static function getByBacktrace($value, $first_only = false, $include_deleted = false)
+	static function getByChildTable($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE backtrace = '".str_replace("'", "''", $value)."'";
+		$sql = "SELECT * FROM $object->table WHERE child_table = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setBirthday($value = null)
+	function setCity($value = null)
 	{
-		if (is_numeric($value))
-		{
-			$value = $this->smartTime($value, 'Y-m-d');
-		}
-		self::set($this, 'birthday', $value);
-		return $this;
+		return self::set($this, 'city', $value);
 	}
 
-	function getBirthday($vars = null)
+	function getCity($vars = null)
 	{
-		if (!property_exists($this, 'birthday'))
+		if (!property_exists($this, 'city'))
 		{
 			return null;
 		}
-		if ($vars == '')
-		{
-			$vars = 'Y-m-d';
-		}
-		return $this->smartTime($this->birthday, $vars);
+		return $this->sanitize('city', $this->city);
 	}
 
-	static function getByBirthday($value, $first_only = false, $include_deleted = false)
+	static function getByCity($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE birthday = '".str_replace("'", "''", $value)."'";
+		$sql = "SELECT * FROM $object->table WHERE city = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setBrowser($value = null)
+	function setCode($value = null)
 	{
-		self::set($this, 'browser', $value);
-		return $this;
+		return self::set($this, 'code', $value);
 	}
 
-	function getBrowser($vars = null)
+	function getCode($vars = null)
 	{
-		if (!property_exists($this, 'browser'))
+		if (!property_exists($this, 'code'))
 		{
 			return null;
 		}
-		return $this->sanitize('browser', $this->browser);
+		return $this->sanitize('code', $this->code);
 	}
 
-	static function getByBrowser($value, $first_only = false, $include_deleted = false)
+	static function getByCode($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(browser) = '".strtolower(str_replace("'", "''", $value))."'";
+		$sql = "SELECT * FROM $object->table WHERE code = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
 	function setCreated($value = null)
 	{
-		self::set($this, 'created', $value);
-		return $this;
+		return self::set($this, 'created', $value);
 	}
 
 	function getCreated($vars = null)
@@ -139,12 +178,12 @@ class GettersAndSetters extends BaseObject
 		{
 			$vars = 'Y-m-d H:i:s';
 		}
-		return $this->smartTime($this->created, $vars);
+		return $this->formatTime($this->created, $vars);
 	}
 
 	static function getByCreated($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
@@ -154,68 +193,9 @@ class GettersAndSetters extends BaseObject
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setDeleted($value = null)
-	{
-		self::set($this, 'deleted', $value);
-		return $this;
-	}
-
-	function getDeleted($vars = null)
-	{
-		if (!property_exists($this, 'deleted'))
-		{
-			return null;
-		}
-		if ($vars == '')
-		{
-			$vars = 'Y-m-d H:i:s';
-		}
-		return $this->smartTime($this->deleted, $vars);
-	}
-
-	static function getByDeleted($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE deleted = '".str_replace("'", "''", $value)."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setDescription($value = null)
-	{
-		self::set($this, 'description', $value);
-		return $this;
-	}
-
-	function getDescription($vars = null)
-	{
-		if (!property_exists($this, 'description'))
-		{
-			return null;
-		}
-		return $this->sanitize('description', $this->description);
-	}
-
-	static function getByDescription($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE description = '".str_replace("'", "''", $value)."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
 	function setEmail($value = null)
 	{
-		self::set($this, 'email', $value);
-		return $this;
+		return self::set($this, 'email', $value);
 	}
 
 	function getEmail($vars = null)
@@ -229,214 +209,45 @@ class GettersAndSetters extends BaseObject
 
 	static function getByEmail($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(email) = '".strtolower(str_replace("'", "''", $value))."'";
+		$sql = "SELECT * FROM $object->table WHERE email = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setEquipped($value = null)
+	function setFirstName($value = null)
 	{
-		self::set($this, 'equipped', $value);
-		return $this;
+		return self::set($this, 'first_name', $value);
 	}
 
-	function getEquipped($vars = null)
+	function getFirstName($vars = null)
 	{
-		if (!property_exists($this, 'equipped'))
+		if (!property_exists($this, 'first_name'))
 		{
 			return null;
 		}
-		return $this->sanitize('equipped', $this->equipped);
+		return $this->sanitize('first_name', $this->first_name);
 	}
 
-	static function getByEquipped($value, $first_only = false, $include_deleted = false)
+	static function getByFirstName($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE equipped = '".str_replace("'", "''", $value)."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setEquipTo($value = null)
-	{
-		self::set($this, 'equip_to', $value);
-		return $this;
-	}
-
-	function getEquipTo($vars = null)
-	{
-		if (!property_exists($this, 'equip_to'))
-		{
-			return null;
-		}
-		return $this->sanitize('equip_to', $this->equip_to);
-	}
-
-	static function getByEquipTo($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(equip_to) = '".strtolower(str_replace("'", "''", $value))."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setFont($value = null)
-	{
-		self::set($this, 'font', $value);
-		return $this;
-	}
-
-	function getFont($vars = null)
-	{
-		if (!property_exists($this, 'font'))
-		{
-			return null;
-		}
-		return $this->sanitize('font', $this->font);
-	}
-
-	static function getByFont($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(font) = '".strtolower(str_replace("'", "''", $value))."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setFromId($value = null)
-	{
-		self::set($this, 'from_id', $value);
-		return $this;
-	}
-
-	function getFromId($vars = null)
-	{
-		if (!property_exists($this, 'from_id'))
-		{
-			return null;
-		}
-		$value = $this->sanitize('from_id', $this->from_id);
-		if ($vars)
-		{
-			$value = number_format($this->from_id);
-		}
-		return $value;
-	}
-
-	static function getByFromId($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE from_id = ".round(preg_replace('/[^-.0-9]/', '', $value))."";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setFromName($value = null)
-	{
-		self::set($this, 'from_name', $value);
-		return $this;
-	}
-
-	function getFromName($vars = null)
-	{
-		if (!property_exists($this, 'from_name'))
-		{
-			return null;
-		}
-		return $this->sanitize('from_name', $this->from_name);
-	}
-
-	static function getByFromName($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(from_name) = '".strtolower(str_replace("'", "''", $value))."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setGender($value = null)
-	{
-		self::set($this, 'gender', $value);
-		return $this;
-	}
-
-	function getGender($vars = null)
-	{
-		if (!property_exists($this, 'gender'))
-		{
-			return null;
-		}
-		return $this->sanitize('gender', $this->gender);
-	}
-
-	static function getByGender($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE gender = '".str_replace("'", "''", $value)."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setHardcore($value = null)
-	{
-		self::set($this, 'hardcore', $value);
-		return $this;
-	}
-
-	function getHardcore($vars = null)
-	{
-		if (!property_exists($this, 'hardcore'))
-		{
-			return null;
-		}
-		return $this->sanitize('hardcore', $this->hardcore);
-	}
-
-	static function getByHardcore($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE hardcore = '".str_replace("'", "''", $value)."'";
+		$sql = "SELECT * FROM $object->table WHERE first_name = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
 	function setId($value = null)
 	{
-		self::set($this, 'id', $value);
-		return $this;
+		return self::set($this, 'id', $value);
 	}
 
 	function getId($vars = null)
@@ -455,7 +266,7 @@ class GettersAndSetters extends BaseObject
 
 	static function getById($value, $first_only = true, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
@@ -465,64 +276,66 @@ class GettersAndSetters extends BaseObject
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setIp($value = null)
+	function setInvalidLogins($value = null)
 	{
-		self::set($this, 'ip', $value);
-		return $this;
+		return self::set($this, 'invalid_logins', $value);
 	}
 
-	function getIp($vars = null)
+	function getInvalidLogins($vars = null)
 	{
-		if (!property_exists($this, 'ip'))
+		if (!property_exists($this, 'invalid_logins'))
 		{
 			return null;
 		}
-		return $this->sanitize('ip', $this->ip);
+		$value = $this->sanitize('invalid_logins', $this->invalid_logins);
+		if ($vars)
+		{
+			$value = number_format($this->invalid_logins);
+		}
+		return $value;
 	}
 
-	static function getByIp($value, $first_only = false, $include_deleted = false)
+	static function getByInvalidLogins($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(ip) = '".strtolower(str_replace("'", "''", $value))."'";
+		$sql = "SELECT * FROM $object->table WHERE invalid_logins = ".round(preg_replace('/[^-.0-9]/', '', $value))."";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setMethod($value = null)
+	function setLastName($value = null)
 	{
-		self::set($this, 'method', $value);
-		return $this;
+		return self::set($this, 'last_name', $value);
 	}
 
-	function getMethod($vars = null)
+	function getLastName($vars = null)
 	{
-		if (!property_exists($this, 'method'))
+		if (!property_exists($this, 'last_name'))
 		{
 			return null;
 		}
-		return $this->sanitize('method', $this->method);
+		return $this->sanitize('last_name', $this->last_name);
 	}
 
-	static function getByMethod($value, $first_only = false, $include_deleted = false)
+	static function getByLastName($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(method) = '".strtolower(str_replace("'", "''", $value))."'";
+		$sql = "SELECT * FROM $object->table WHERE last_name = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
 	function setModified($value = null)
 	{
-		self::set($this, 'modified', $value);
-		return $this;
+		return self::set($this, 'modified', $value);
 	}
 
 	function getModified($vars = null)
@@ -535,12 +348,12 @@ class GettersAndSetters extends BaseObject
 		{
 			$vars = 'Y-m-d H:i:s';
 		}
-		return $this->smartTime($this->modified, $vars);
+		return $this->formatTime($this->modified, $vars);
 	}
 
 	static function getByModified($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
@@ -552,8 +365,7 @@ class GettersAndSetters extends BaseObject
 
 	function setName($value = null)
 	{
-		self::set($this, 'name', $value);
-		return $this;
+		return self::set($this, 'name', $value);
 	}
 
 	function getName($vars = null)
@@ -567,74 +379,19 @@ class GettersAndSetters extends BaseObject
 
 	static function getByName($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(name) = '".strtolower(str_replace("'", "''", $value))."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setOrientation($value = null)
-	{
-		self::set($this, 'orientation', $value);
-		return $this;
-	}
-
-	function getOrientation($vars = null)
-	{
-		if (!property_exists($this, 'orientation'))
-		{
-			return null;
-		}
-		return $this->sanitize('orientation', $this->orientation);
-	}
-
-	static function getByOrientation($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE orientation = '".str_replace("'", "''", $value)."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setParams($value = null)
-	{
-		self::set($this, 'params', $value);
-		return $this;
-	}
-
-	function getParams($vars = null)
-	{
-		if (!property_exists($this, 'params'))
-		{
-			return null;
-		}
-		return $this->sanitize('params', $this->params);
-	}
-
-	static function getByParams($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE params = '".str_replace("'", "''", $value)."'";
+		$sql = "SELECT * FROM $object->table WHERE name = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
 	function setParentClass($value = null)
 	{
-		self::set($this, 'parent_class', $value);
-		return $this;
+		return self::set($this, 'parent_class', $value);
 	}
 
 	function getParentClass($vars = null)
@@ -648,20 +405,19 @@ class GettersAndSetters extends BaseObject
 
 	static function getByParentClass($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(parent_class) = '".strtolower(str_replace("'", "''", $value))."'";
+		$sql = "SELECT * FROM $object->table WHERE parent_class = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
 	function setParentId($value = null)
 	{
-		self::set($this, 'parent_id', $value);
-		return $this;
+		return self::set($this, 'parent_id', $value);
 	}
 
 	function getParentId($vars = null)
@@ -680,7 +436,7 @@ class GettersAndSetters extends BaseObject
 
 	static function getByParentId($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
@@ -690,10 +446,35 @@ class GettersAndSetters extends BaseObject
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
+	function setParentTable($value = null)
+	{
+		return self::set($this, 'parent_table', $value);
+	}
+
+	function getParentTable($vars = null)
+	{
+		if (!property_exists($this, 'parent_table'))
+		{
+			return null;
+		}
+		return $this->sanitize('parent_table', $this->parent_table);
+	}
+
+	static function getByParentTable($value, $first_only = false, $include_deleted = false)
+	{
+		if (!$value || strlen($value) == 0)
+		{
+			return ($first_only ? null : []);
+		}
+		$class = get_called_class();
+		$object = new $class();
+		$sql = "SELECT * FROM $object->table WHERE parent_table = '".str_replace("'", "''", $value)."'";
+		return self::selectAll($sql, $first_only, $include_deleted);
+	}
+
 	function setPassword($value = null)
 	{
-		self::set($this, 'password', $value);
-		return $this;
+		return self::set($this, 'password', $value);
 	}
 
 	function getPassword($vars = null)
@@ -707,7 +488,7 @@ class GettersAndSetters extends BaseObject
 
 	static function getByPassword($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
@@ -717,497 +498,272 @@ class GettersAndSetters extends BaseObject
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setPlaying($value = null)
+	function setPhone($value = null)
 	{
-		self::set($this, 'playing', $value);
-		return $this;
+		return self::set($this, 'phone', $value);
 	}
 
-	function getPlaying($vars = null)
+	function getPhone($vars = null)
 	{
-		if (!property_exists($this, 'playing'))
+		if (!property_exists($this, 'phone'))
 		{
 			return null;
 		}
-		return $this->sanitize('playing', $this->playing);
+		return $this->sanitize('phone', $this->phone);
 	}
 
-	static function getByPlaying($value, $first_only = false, $include_deleted = false)
+	static function getByPhone($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE playing = '".str_replace("'", "''", $value)."'";
+		$sql = "SELECT * FROM $object->table WHERE phone = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setQuantity($value = null)
+	function setRoleId($value = null)
 	{
-		self::set($this, 'quantity', $value);
-		return $this;
+		return self::set($this, 'role_id', $value);
 	}
 
-	function getQuantity($vars = null)
+	function getRoleId($vars = null)
 	{
-		if (!property_exists($this, 'quantity'))
+		if (!property_exists($this, 'role_id'))
 		{
 			return null;
 		}
-		$value = $this->sanitize('quantity', $this->quantity);
+		$value = $this->sanitize('role_id', $this->role_id);
 		if ($vars)
 		{
-			$value = number_format($this->quantity);
+			$value = number_format($this->role_id);
 		}
 		return $value;
 	}
 
-	static function getByQuantity($value, $first_only = false, $include_deleted = false)
+	static function getByRoleId($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE quantity = '".str_replace("'", "''", $value)."'";
+		$sql = "SELECT * FROM $object->table WHERE role_id = ".round(preg_replace('/[^-.0-9]/', '', $value))."";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setRead($value = null)
+	function setState($value = null)
 	{
-		self::set($this, 'read', $value);
-		return $this;
+		return self::set($this, 'state', $value);
 	}
 
-	function getRead($vars = null)
+	function getState($vars = null)
 	{
-		if (!property_exists($this, 'read'))
+		if (!property_exists($this, 'state'))
 		{
 			return null;
 		}
-		return $this->sanitize('read', $this->read);
+		return $this->sanitize('state', $this->state);
 	}
 
-	static function getByRead($value, $first_only = false, $include_deleted = false)
+	static function getByState($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE read = '".str_replace("'", "''", $value)."'";
+		$sql = "SELECT * FROM $object->table WHERE state = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setReferrer($value = null)
+	function setStreet($value = null)
 	{
-		self::set($this, 'referrer', $value);
-		return $this;
+		return self::set($this, 'street', $value);
 	}
 
-	function getReferrer($vars = null)
+	function getStreet($vars = null)
 	{
-		if (!property_exists($this, 'referrer'))
+		if (!property_exists($this, 'street'))
 		{
 			return null;
 		}
-		return $this->sanitize('referrer', $this->referrer);
+		return $this->sanitize('street', $this->street);
 	}
 
-	static function getByReferrer($value, $first_only = false, $include_deleted = false)
+	static function getByStreet($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(referrer) = '".strtolower(str_replace("'", "''", $value))."'";
+		$sql = "SELECT * FROM $object->table WHERE street = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setSeasonal($value = null)
+	function setSubject($value = null)
 	{
-		self::set($this, 'seasonal', $value);
-		return $this;
+		return self::set($this, 'subject', $value);
 	}
 
-	function getSeasonal($vars = null)
+	function getSubject($vars = null)
 	{
-		if (!property_exists($this, 'seasonal'))
+		if (!property_exists($this, 'subject'))
 		{
 			return null;
 		}
-		return $this->sanitize('seasonal', $this->seasonal);
+		return $this->sanitize('subject', $this->subject);
 	}
 
-	static function getBySeasonal($value, $first_only = false, $include_deleted = false)
+	static function getBySubject($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE seasonal = '".str_replace("'", "''", $value)."'";
+		$sql = "SELECT * FROM $object->table WHERE subject = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setSessionKey($value = null)
+	function setTemporaryExpires($value = null)
 	{
-		self::set($this, 'session_key', $value);
-		return $this;
+		return self::set($this, 'temporary_expires', $value);
 	}
 
-	function getSessionKey($vars = null)
+	function getTemporaryExpires($vars = null)
 	{
-		if (!property_exists($this, 'session_key'))
+		if (!property_exists($this, 'temporary_expires'))
 		{
 			return null;
 		}
-		return $this->sanitize('session_key', $this->session_key);
+		if ($vars == '')
+		{
+			$vars = 'Y-m-d H:i:s';
+		}
+		return $this->formatTime($this->temporary_expires, $vars);
 	}
 
-	static function getBySessionKey($value, $first_only = false, $include_deleted = false)
+	static function getByTemporaryExpires($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(session_key) = '".strtolower(str_replace("'", "''", $value))."'";
+		$sql = "SELECT * FROM $object->table WHERE temporary_expires = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setSize($value = null)
+	function setTemporaryPass($value = null)
 	{
-		self::set($this, 'size', $value);
-		return $this;
+		return self::set($this, 'temporary_pass', $value);
 	}
 
-	function getSize($vars = null)
+	function getTemporaryPass($vars = null)
 	{
-		if (!property_exists($this, 'size'))
+		if (!property_exists($this, 'temporary_pass'))
 		{
 			return null;
 		}
-		$value = $this->sanitize('size', $this->size);
-		if ($vars)
-		{
-			$value = number_format($this->size);
-		}
-		return $value;
+		return $this->sanitize('temporary_pass', $this->temporary_pass);
 	}
 
-	static function getBySize($value, $first_only = false, $include_deleted = false)
+	static function getByTemporaryPass($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE size = '".str_replace("'", "''", $value)."'";
+		$sql = "SELECT * FROM $object->table WHERE temporary_pass = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setSlug($value = null)
+	function setUnit($value = null)
 	{
-		self::set($this, 'slug', $value);
-		return $this;
+		return self::set($this, 'unit', $value);
 	}
 
-	function getSlug($vars = null)
+	function getUnit($vars = null)
 	{
-		if (!property_exists($this, 'slug'))
+		if (!property_exists($this, 'unit'))
 		{
 			return null;
 		}
-		return $this->sanitize('slug', $this->slug);
+		return $this->sanitize('unit', $this->unit);
 	}
 
-	static function getBySlug($value, $first_only = false, $include_deleted = false)
+	static function getByUnit($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(slug) = '".strtolower(str_replace("'", "''", $value))."'";
+		$sql = "SELECT * FROM $object->table WHERE unit = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setTheme($value = null)
+	function setZip($value = null)
 	{
-		self::set($this, 'theme', $value);
-		return $this;
+		return self::set($this, 'zip', $value);
 	}
 
-	function getTheme($vars = null)
+	function getZip($vars = null)
 	{
-		if (!property_exists($this, 'theme'))
+		if (!property_exists($this, 'zip'))
 		{
 			return null;
 		}
-		return $this->sanitize('theme', $this->theme);
+		return $this->sanitize('zip', $this->zip);
 	}
 
-	static function getByTheme($value, $first_only = false, $include_deleted = false)
+	static function getByZip($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(theme) = '".strtolower(str_replace("'", "''", $value))."'";
+		$sql = "SELECT * FROM $object->table WHERE zip = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 
-	function setTimes($value = null)
+	function setZip4($value = null)
 	{
-		self::set($this, 'times', $value);
-		return $this;
+		return self::set($this, 'zip_4', $value);
 	}
 
-	function getTimes($vars = null)
+	function getZip4($vars = null)
 	{
-		if (!property_exists($this, 'times'))
+		if (!property_exists($this, 'zip_4'))
 		{
 			return null;
 		}
-		$value = $this->sanitize('times', $this->times);
-		if ($vars)
-		{
-			$value = number_format($this->times);
-		}
-		return $value;
+		return $this->sanitize('zip_4', $this->zip_4);
 	}
 
-	static function getByTimes($value, $first_only = false, $include_deleted = false)
+	static function getByZip4($value, $first_only = false, $include_deleted = false)
 	{
-		if (strlen($value) == 0)
+		if (!$value || strlen($value) == 0)
 		{
 			return ($first_only ? null : []);
 		}
 		$class = get_called_class();
 		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE times = '".str_replace("'", "''", $value)."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setTimezone($value = null)
-	{
-		self::set($this, 'timezone', $value);
-		return $this;
-	}
-
-	function getTimezone($vars = null)
-	{
-		if (!property_exists($this, 'timezone'))
-		{
-			return null;
-		}
-		return $this->sanitize('timezone', $this->timezone);
-	}
-
-	static function getByTimezone($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(timezone) = '".strtolower(str_replace("'", "''", $value))."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setType($value = null)
-	{
-		self::set($this, 'type', $value);
-		return $this;
-	}
-
-	function getType($vars = null)
-	{
-		if (!property_exists($this, 'type'))
-		{
-			return null;
-		}
-		return $this->sanitize('type', $this->type);
-	}
-
-	static function getByType($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE LOWER(type) = '".strtolower(str_replace("'", "''", $value))."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setValueInt($value = null)
-	{
-		self::set($this, 'value_int', $value);
-		return $this;
-	}
-
-	function getValueInt($vars = null)
-	{
-		if (!property_exists($this, 'value_int'))
-		{
-			return null;
-		}
-		$value = $this->sanitize('value_int', $this->value_int);
-		if ($vars)
-		{
-			$value = number_format($this->value_int);
-		}
-		return $value;
-	}
-
-	static function getByValueInt($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE value_int = ".round(preg_replace('/[^-.0-9]/', '', $value))."";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setValueText($value = null)
-	{
-		self::set($this, 'value_text', $value);
-		return $this;
-	}
-
-	function getValueText($vars = null)
-	{
-		if (!property_exists($this, 'value_text'))
-		{
-			return null;
-		}
-		return $this->sanitize('value_text', $this->value_text);
-	}
-
-	static function getByValueText($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE value_text = '".str_replace("'", "''", $value)."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setX($value = null)
-	{
-		self::set($this, 'x', $value);
-		return $this;
-	}
-
-	function getX($vars = null)
-	{
-		if (!property_exists($this, 'x'))
-		{
-			return null;
-		}
-		$value = $this->sanitize('x', $this->x);
-		if ($vars)
-		{
-			$value = number_format($this->x);
-		}
-		return $value;
-	}
-
-	static function getByX($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE x = '".str_replace("'", "''", $value)."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setY($value = null)
-	{
-		self::set($this, 'y', $value);
-		return $this;
-	}
-
-	function getY($vars = null)
-	{
-		if (!property_exists($this, 'y'))
-		{
-			return null;
-		}
-		$value = $this->sanitize('y', $this->y);
-		if ($vars)
-		{
-			$value = number_format($this->y);
-		}
-		return $value;
-	}
-
-	static function getByY($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE y = '".str_replace("'", "''", $value)."'";
-		return self::selectAll($sql, $first_only, $include_deleted);
-	}
-
-	function setZ($value = null)
-	{
-		self::set($this, 'z', $value);
-		return $this;
-	}
-
-	function getZ($vars = null)
-	{
-		if (!property_exists($this, 'z'))
-		{
-			return null;
-		}
-		$value = $this->sanitize('z', $this->z);
-		if ($vars)
-		{
-			$value = number_format($this->z);
-		}
-		return $value;
-	}
-
-	static function getByZ($value, $first_only = false, $include_deleted = false)
-	{
-		if (strlen($value) == 0)
-		{
-			return ($first_only ? null : []);
-		}
-		$class = get_called_class();
-		$object = new $class();
-		$sql = "SELECT * FROM $object->table WHERE z = ".round(preg_replace('/[^-.0-9]/', '', $value))."";
+		$sql = "SELECT * FROM $object->table WHERE zip_4 = '".str_replace("'", "''", $value)."'";
 		return self::selectAll($sql, $first_only, $include_deleted);
 	}
 }

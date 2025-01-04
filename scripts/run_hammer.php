@@ -1,13 +1,23 @@
 <?php
 
-$db_type = (!empty($argv[1]) ? $argv[1] : '');
-if (!in_array($db_type, ['postgres','mysql']))
+require __DIR__.'/config.php';
+
+echo "\r\n";
+echo "=====================================\r\n";
+
+SledgeMC::buildFromDatabase();
+
+echo "=====================================\r\n";
+
+echo "\r\nExporting schema and doing git add...";
+if (!is_dir(SLEDGEMC_PATH.'/.server'))
 {
-	die("\r\nusage : php run_hammer.php <postgres/mysql>\r\n\r\n");
+	mkdir(SLEDGEMC_PATH.'/.server');
 }
+shell_exec("pg_dump -s ".SLEDGEMC_NAME." > ".SLEDGEMC_PATH."/.server/schema.sql");
+shell_exec("git add ".SLEDGEMC_PATH."/.server/schema.sql ".SLEDGEMC_PATH."/models/base/*");
 
-$skip_auto_include = true;
-require 'config.php';
-require 'SledgeMCHammer_'.$db_type.'.php';
+echo "\r\nChecking indexes...\r\n";
+echo shell_exec("php ".__DIR__."/indexes.php");
 
-SledgeMCHammer::build();
+echo "DONE\r\n";

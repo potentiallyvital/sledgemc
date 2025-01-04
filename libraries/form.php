@@ -1,505 +1,640 @@
 <?php
+/****
+ * form helper functions
+ *
+ * @author : Vital (potentiallyvital@gmail.com)
+ */
+?>
+<?php
 
-// input handler functions
+defined('FORM_LABEL_COL_WIDTH') || define('FORM_LABEL_COL_WIDTH', 4);
 
-function title($string)
+/**
+ * add a tooltip to something
+ */
+function tooltip($tip, $html)
 {
-        $words = explode(' ', $string);
-
-        $html = [];
-        $html[] = '<span class="title">';
-        foreach ($words as $word)
-        {
-                if (strlen($word) >= 4)
-                {
-                        $letters = str_split($word);
-                        $first = array_shift($letters);
-                        $last = implode('', $letters);
-
-                        $html[] = '<span class="first">'.$first.'</span>'.$last;
-                }
-                else
-                {
-                        $html[] = $word;
-                }
-        }
-        $html[] = '</span>';
-
-        return implode('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', $html);
+	return '<span class="tooltip"><div>'.$tip.'</div>'.$html.'</span>';
 }
 
-function post($variable = null, $validate = false)
+/**
+ * add an error to a field
+ */
+function error($name, $message)
 {
-        if (!$variable)
-        {
-                $values = [];
-                foreach ($_POST as $variable => $value)
-                {
-                        $values[$variable] = post($variable, $validate);
-                }
-                foreach ($_GET as $variable => $value)
-                {
-                        $values[$variable] = post($variable, $validate);
-                }
-                foreach ($_FILES as $variable => $value)
-                {
-                        $values[$variable] = post($variable, $validate);
-                }
-
-                return $values;
-        }
-
-        $value = false;
-        if (isset($_POST[$variable]))
-        {
-                $value = $_POST[$variable];
-        }
-        elseif (isset($_FILES[$variable]))
-        {
-                $names = $_FILES[$variable]['name'];
-                $paths = $_FILES[$variable]['tmp_name'];
-                $sizes = $_FILES[$variable]['size'];
-                $types = $_FILES[$variable]['type'];
-
-                foreach ($names as $i => $name)
-                {
-                        $data = [];
-                        $data['name'] = $name;
-                        $data['path'] = $paths[$i];
-                        $data['type'] = $types[$i];
-                        $data['size'] = $sizes[$i];
-
-                        $value[$name] = $data;
-                }
-        }
-        elseif (isset($_GET[$variable]))
-        {
-                $value = $_GET[$variable];
-        }
-        elseif (isset($_SESSION[$variable]))
-        {
-                $value = $_SESSION[$variable];
-        }
-
-        if ($validate)
-        {
-                $options = ['~','|','/','(',')','-','_','+','='];
-                foreach ($options as $option)
-                {
-                        if (!stristr($validate, $option))
-                        {
-                                return preg_replace($option.'[^'.$validate.']'.$option, '', $value);
-                        }
-                }
-        }
-
-        return $value;
+	$GLOBALS['errors'][$name][] = $message;
 }
 
-function hidden($name, $value, $data = [])
+/**
+ * check if there are errors (general or field specific)
+ */
+function errors($name = null)
 {
-        $data['type'] = 'hidden';
-        $data['value'] = $value;
-        $data = normalize_for_input($name, $data);
-
-        return "<input {$data['vars']} />";
-}
-
-function numeric($name, $data = [])
-{
-        $data['type'] = 'number';
-        if (!isset($data['value']))
-        {
-                $data['value'] = 0;
-        }
-
-        return textbox($name, $data);
-}
-
-function textbox($name, $data = [])
-{
-        if (stristr($name, 'password') && empty($data['type']))
-        {
-                $data['type'] = 'password';
-                $data['value'] = '';
-                $_POST[$name] = '';
-        }
-        elseif (stristr($name, 'email') && empty($data['type']))
-        {
-                $data['type'] = 'email';
-        }
-	elseif (!empty($data['type']) && $data['type'] == 'date')
+	if (empty($name))
 	{
-		$data['type'] = 'text';
-		$data['class'] = (!empty($data['class']) ? $data['class'].' date' : 'date');
-		$data['placeholder'] = 'mm/dd/yyyy';
-		if (!empty($data['value']))
+		return !empty($GLOBALS['errors']);
+	}
+
+	if (empty($GLOBALS['errors'][$name]))
+	{
+		return false;
+	}
+
+	return '<div class="input input-errors"><b>&times;</b> '.implode('<br />', $GLOBALS['errors'][$name]).'</div>';
+}
+
+/**
+ * show a hidden field
+ */
+function hidden($name, $value)
+{
+	$value = (post($name) ?: ($value !== null ? $value : ''));
+	$id = (isset($options['id']) ? $options['id'] : slugify($name));
+	$class = (isset($options['class']) ? $options['class'] : '').' '.$id.' hidden';
+
+	return '<input type="hidden" class="'.$class.'" id="'.$id.'" name="'.$name.'" value="'.$value.'" />';
+}
+
+/**
+ * show some text indented like a form element
+ */
+function label($label, $options = [])
+{
+	$label_width = (isset($options['width']) ? $options['width'] : FORM_LABEL_COL_WIDTH);
+	$value_width = 12-$label_width;
+
+	return '<div class="input-wrapper form-label"><div class="row"><div class="col-md-'.$label_width.'"></div><div class="col-md-'.$value_width.'">'.$label.'</div></div></div>';
+}
+
+/**
+ * show a color field
+ */
+function color($name, $options = [])
+{
+$options['class'] = (isset($options['class']) ? $options['class'] : '').' color';
+return textbox($name, $options);
+
+	$value = (post($name) ?: (isset($options['value']) ? $options['value'] : ''));
+	$id = (isset($options['id']) ? $options['id'] : slugify($name));
+	$label = (isset($options['label']) ? $options['label'] : deslugify($name));
+	$class = (isset($options['class']) ? $options['class'] : '').' '.$id.' input color';
+	if (!$label)
+	{
+		$options['width'] = 0;
+	}
+	$label_width = (isset($options['width']) ? $options['width'] : FORM_LABEL_COL_WIDTH);
+	$value_width = 12-$label_width;
+
+/*
+	if (isset($options['transparency']))
+	{
+		if ($options['transparency'] === true)
 		{
-			$data['value'] = date('m/d/Y', strtotime($data['value']));
+			if (substr($value, 0, 3) == 'rgb')
+			{
+				$values = str_replace(['rgb(','rgba(',')'], '', $value);
+				$values = explode(',', $values);
+
+				$r = array_shift($values);
+				$g = array_shift($values);
+				$b = array_shift($values);
+				$a = array_shift($values);
+				$a = ($a === null ? 1 : $a);
+				$transparency = $a*100;
+				$a = $a*255;
+
+				$r = str_pad(dechex((int)$r), 2, '0', STR_PAD_LEFT);
+				$g = str_pad(dechex((int)$g), 2, '0', STR_PAD_LEFT);
+				$b = str_pad(dechex((int)$b), 2, '0', STR_PAD_LEFT);
+				$a = str_pad(dechex((int)$a), 2, '0', STR_PAD_LEFT);
+
+				$value = '#'.$r.$g.$b.$a;
+			}
+			if (substr($value, 0, 1) == '#' && strlen($value) == 9)
+			{
+				$transparency = round(hexdec(substr($value, -2))/255*100);
+			}
+			else
+			{
+				$transparency = 100;
+			}
+		}
+		else
+		{
+			$transparency = $options['transparency'];
+		}
+	}
+*/
+
+	$autocomplete = (isset($options['autocomplete']) ? $options['autocomplete'] : false);
+	if ($autocomplete)
+	{
+		$class .= ' autocomplete';
+	}
+
+	$disabled = '';
+	if (isset($options['disabled']))
+	{
+		$disabled = 'disabled="'.$options['disabled'].'"';
+		if ($options['disabled'])
+		{
+			$class .= ' disabled';
 		}
 	}
 
-        $data['type'] = (!empty($data['type']) ? $data['type'] : 'text');
-        $data['autocomplete'] = 'off';
-        $data = normalize_for_input($name, $data);
+	$html = [];
+	$html[] = '<div class="input-wrapper">';
+	$html[] = '<i class="fa fa-brush color-picker"></i>';
+	if ($label)
+	{
+		$html[] = '<div class="row"><div class="col-md-'.$label_width.' text-right-md-up"><label for="'.$id.'">'.$label.'</label></div><div class="col-md-'.$value_width.'">';
+	}
+	$html[] = errors($name);
+	$html[] = '<input type="text" class="'.$class.'" id="'.$id.'" name="'.$name.'" value="'.$value.'" style="background-color:'.$value.'" '.$disabled.' />';
+	#$html[] = '<input type="color" class="hidden" value="'.$value.'" />';
+	if ($label)
+	{
+		$html[] = '</div></div>';
+	}
 
-        $html = '<div class="textbox">';
-        if (empty($data['nolabel']))
-        {
-                $html .= '<label for="'.$data['id'].'" class="textbox-label">'.$data['label'].':</label>';
-        }
-        $html .= '<input '.$data['vars'].' />';
-        $html .= '</div>';
+/*
+	if ($transparency !== null)
+	{
+		$options = [0=>'Transparent',10=>'10%',20=>'20%',30=>'30%',40=>'40%',50=>'50%',60=>'60%',70=>'70%',80=>'80%',90=>'90%',100=>'Opaque'];
+		$html[] = dropdown($id.'-transparency', ['label'=>'Transparency','value'=>$transparency,'options'=>$options,'width'=>8,'class'=>'transparency']);
+	}
+*/
 
-        return $html;
+	$html[] = '</div>';
+
+	return implode('', $html);
 }
 
-function textarea($name, $data = [])
+/**
+ * show a textbox
+ */
+function textbox($name, $options = [])
 {
-        $value = '';
-        if (empty($data['novalue']))
-        {
-                $value = (post($name) ?: (!empty($data['value']) ? $data['value'] : ''));
-        }
+	$value = (post($name) ?: (isset($options['value']) ? $options['value'] : ''));
+	$id = (isset($options['id']) ? $options['id'] : slugify($name));
+	$label = (isset($options['label']) ? $options['label'] : deslugify($name));
+	$type = (isset($options['type']) ? $options['type'] : 'text');
+	$class = (isset($options['class']) ? $options['class'] : '').' '.$id.' input';
+	$color = (stristr($class, 'color'));
+	$style = (isset($options['style']) ? 'style="'.$options['style'].'"' : ($color ? 'style="background-color:'.$value.';border-color:'.$value.'"' : ''));
+	$placeholder = (isset($options['placeholder']) ? 'placeholder="'.$options['placeholder'].'"' : '');
 
-        unset($data['value']);
-        $data = normalize_for_input($name, $data);
+	if (!empty($options['tooltip']))
+	{
+		$label = tooltip($options['tooltip'], $label.' <i class="fa fa-circle-question text-purple"></i>');
+	}
 
-        $html = '<div class="textarea">';
-        if (empty($data['nolabel']))
-        {
-                $html .= '<label for="'.$data['id'].'" class="textbox-label">'.$data['label'].':</label>';
-        }
-        $html .= '<textarea '.$data['vars'].'>'.$value.'</textarea>';
-        $html .= '</div>';
+	if (!$label)
+	{
+		$options['width'] = 0;
+	}
+	$label_width = (isset($options['width']) ? $options['width'] : FORM_LABEL_COL_WIDTH);
+	$value_width = 12-$label_width;
 
-        return $html;
+	$autocomplete = (isset($options['autocomplete']) ? $options['autocomplete'] : false);
+	if ($autocomplete)
+	{
+		$class .= ' autocomplete';
+	}
+
+	$disabled = '';
+	if (isset($options['disabled']))
+	{
+		$disabled = 'disabled="'.$options['disabled'].'"';
+		if ($options['disabled'])
+		{
+			$class .= ' disabled';
+		}
+	}
+
+	$html = [];
+	$html[] = '<div class="input-wrapper">';
+	if ($color)
+	{
+		$html[] = '<i class="input-icon fa fa-brush color-picker left"></i>';
+		$html[] = '<i class="input-icon fa fa-trash remove-color" '.($value ? '' : 'style="display:none;"').'></i>';
+	}
+	if ($label)
+	{
+		$html[] = '<div class="row"><div class="col-md-'.$label_width.' text-right-md-up"><label for="'.$id.'">'.$label.'</label></div><div class="col-md-'.$value_width.'">';
+	}
+	$html[] = errors($name);
+	$html[] = '<input type="'.$type.'" class="'.$class.'" id="'.$id.'" name="'.$name.'" value="'.$value.'" '.$style.' '.$disabled.' '.$placeholder.' />';
+	if ($label)
+	{
+		$html[] = '</div></div>';
+	}
+	$html[] = '</div>';
+
+	return implode('', $html);
 }
 
-function autofill($name, $data = [])
+/**
+ * show a checkbox
+ */
+function checkbox($name, $options = [])
 {
-        $data['special'] = 'autofill';
+	$options['class'] = (isset($options['class']) ? $options['class'] : '').' checkbox';
+	$options['options'] = ['Yes'=>(!empty($options['checked'])),'No'=>(empty($options['checked']))];
+	$options['checkbox'] = true;
 
-        return dropdown($name, $data);
+	return toggle($name, $options);
+
+/*
+	$value = (isset($options['value']) ? $options['value'] : '1');
+	$id = (isset($options['id']) ? $options['id'] : slugify($name));
+	$label = (isset($options['label']) ? $options['label'] : deslugify($name));
+	$class = (isset($options['class']) ? $options['class'] : '').' '.$id.' input';
+	$style = (isset($options['style']) ? 'style="'.$options['style'].'"' : '');
+	$checked = (!empty($options['checked']) ? 'checked="true"' : '');
+	$label_width = (isset($options['width']) ? $options['width'] : FORM_LABEL_COL_WIDTH);
+	$value_width = 12-$label_width;
+
+	$html = [];
+	$html[] = '<div class="input-wrapper">';
+	if ($label)
+	{
+		$html[] = '<div class="row"><div class="col-md-'.$label_width.' text-right-md-up"><label for="'.$id.'">'.$label.'</label></div><div class="col-md-'.$value_width.'">';
+	}
+	$html[] = errors($name);
+	$html[] = '<input type="checkbox" class="'.$class.'" id="'.$id.'" name="'.$name.'" '.$style.' value="'.$value.'" '.$checked.' />';
+	if ($label)
+	{
+		$html[] = '</div></div>';
+	}
+	$html[] = '</div>';
+
+	return implode('', $html);
+*/
 }
 
-function lookup($name, $data = [])
+/**
+ * show a textarea
+ */
+function textarea($name, $options = [])
 {
-        $data['options'] = [];
-        $data['special'] = 'lookup';
-        $data['data-what'] = $name;
+	$value = (post($name) ?: (isset($options['value']) ? $options['value'] : ''));
+	$id = (isset($options['id']) ? $options['id'] : slugify($name));
+	$label = (isset($options['label']) ? $options['label'] : deslugify($name));
+	$class = (isset($options['class']) ? $options['class'] : '').' '.$id.' input';
+	$style = (isset($options['style']) ? 'style="'.$options['style'].'"' : '');
+	$label_width = (isset($options['width']) ? $options['width'] : FORM_LABEL_COL_WIDTH);
+	$value_width = 12-$label_width;
 
-        return dropdown($name, $data);
+	$html = [];
+	$html[] = '<div class="input-wrapper">';
+	if ($label)
+	{
+		$html[] = '<div class="row"><div class="col-md-'.$label_width.' text-right-md-up"><label for="'.$id.'">'.$label.'</label></div><div class="col-md-'.$value_width.'">';
+	}
+	$html[] = errors($name);
+	$html[] = '<textarea class="'.$class.'" id="'.$id.'" name="'.$name.'" '.$style.'>'.$value.'</textarea>';
+	if ($label)
+	{
+		$html[] = '</div></div>';
+	}
+	$html[] = '</div>';
+
+	return implode('', $html);
 }
 
-function dropdown($name, $data = [])
+/**
+ * show a fancy dropdown
+ */
+function dropdown($name, $options = [])
 {
-        $special = (!empty($data['special']) ? $data['special'] : '');
-        unset($data['special']);
+	$value = (post($name) ?: (isset($options['value']) ? $options['value'] : ''));
+	$id = (isset($options['id']) ? $options['id'] : slugify($name));
+	$label = (isset($options['label']) ? $options['label'] : deslugify($name));
+	$class = (isset($options['class']) ? $options['class'] : '').' '.$id.' input dropdown';
+	$label_width = (isset($options['width']) ? $options['width'] : FORM_LABEL_COL_WIDTH);
+	$value_width = 12-$label_width;
 
-        $value = (!empty($data['value']) ? $data['value'] : '');
-        $data = normalize_for_input($name, $data);
-        $selected_value = (post($name) ?: $value);
-        $options = '';
-        $show_value = '';
-        foreach ($data['options'] as $value => $label)
-        {
-                if (is_object($label))
-                {
-                        $value = $label->id;
-                        $label = $label->name;
-                }
+	$empty_text = 'No matches found';
+	if (!empty($options['freeform']))
+	{
+		$class .= ' freeform';
+		$empty_text = $options['freeform'];
+		if (empty($options['options']))
+		{
+			$options['options'] = [];
+		}
+	}
+	elseif (empty($options['options']))
+	{
+		return;
+	}
 
-                $options .= '<div class="dropdown-option '.$special.'" data-value="'.$value.'">'.$label.'</div>';
-                if ($value == $selected_value)
-                {
-                        $show_value = $label;
-                }
-        }
+	$show_value = '';
+	if (isset($options['options'][$value]))
+	{
+		$show_value = $options['options'][$value];
+	}
 
-        $html = '';
-        if (empty($data['nolabel']))
-        {
-                $html .= '<label for="'.$data['id'].'" class="textbox-label">'.$data['label'].':</label>';
-        }
-        $html .= '<div class="dropdown-wrapper '.$special.'">';
-        $html .= '<input type="text" class="input pointer dropdown '.$special.'" value="'.$show_value.'" />';
-        $html .= '<input type="hidden" '.$data['vars'].' />';
-        $html .= '<div class="dropdown-options input '.$special.'">';
-        $html .= $options;
-        $html .= '</div>';
-        $html .= '</div>';
+	$html = [];
+	$html[] = '<div class="input-wrapper">';
+	if ($label)
+	{
+		$html[] = '<div class="row"><div class="col-md-'.$label_width.' text-right-md-up"><label for="'.$id.'">'.$label.'</label></div><div class="col-md-'.$value_width.'">';
+	}
+	$html[] = errors($name);
+	$html[] = '<div class="dropdown-wrapper">';
+	if (!empty($options['freeform']))
+	{
+		$html[] = '<input type="text" id="'.$id.'" name="dropdown['.$name.'][visible]" class="'.$class.'" value="'.$show_value.'" />';
+		$html[] = '<input type="hidden" name="dropdown['.$name.'][hidden]" value="'.$value.'" />';
+	}
+	else
+	{
+		$html[] = '<input type="text" id="'.$id.'" name="'.$name.'" class="'.$class.'" value="'.$show_value.'" />';
+		$html[] = '<input type="hidden" id="'.$id.'-key" name="'.$name.'_key" value="'.$value.'" />';
+	}
+	$html[] = '<div class="dropdown-options input">';
+	foreach ($options['options'] as $option_id => $option_label)
+	{
+		$option_class = 'dropdown-option '.($option_label == $show_value ? 'selected' : '');
+		$html[] = '<div class="'.$option_class.'" data-value="'.$option_id.'">'.$option_label.'</div>';
+	}
+	if (is_string($empty_text))
+	{
+		$html[] = '<div class="dropdown-option selected empty">'.$empty_text.'</div>';
+	}
+	$html[] = '</div>';
+	$html[] = '</div>';
+	if ($label)
+	{
+		$html[] = '</div></div>';
+	}
+	$html[] = '</div>';
 
-        return $html;
+	return implode('', $html);
+
 }
 
-function button($name, $data = [], $url = null)
+/**
+ * show an upload form
+ */
+function upload($name, $options = [])
 {
-        $data['value'] = (!empty($data['value']) ? $data['value'] : 1);
-        $data['class'] = (!empty($data['class']) ? $data['class'].' button' : 'button');
-        $data = normalize_for_input($name, $data);
+	$value = (isset($options['value']) ? $options['value'] : '');
+	$id = (isset($options['id']) ? $options['id'] : slugify($name));
+	$label = (isset($options['label']) ? $options['label'] : deslugify($name));
+	$class = (isset($options['class']) ? $options['class'] : '').' '.$id.' input';
+	$img = (isset($options['img']) ? $options['img'] : false);
+	$label_width = (isset($options['width']) ? $options['width'] : FORM_LABEL_COL_WIDTH);
+	$value_width = 12-$label_width;
 
-        $html = '<div class="button-wrapper">';
-        $html .= '<button '.$data['vars'].'>'.$data['label'].'</button>';
-        if ($url)
-        {
-                $html = '<a href="'.$url.'">'.$html.'</a>';
-        }
-        $html .= '</div>';
+	if ($img)
+	{
+		$value_width -= 4;
+	}
 
-        return $html;
+	$html = [];
+	$html[] = '<div class="input-wrapper">';
+	if ($label)
+	{
+		$html[] = '<div class="row"><div class="col-md-'.$label_width.' text-right-md-up"><label for="'.$id.'">'.$label.'</label></div><div class="col-md-'.$value_width.'">';
+	}
+	$html[] = errors($name);
+	$html[] = '<input type="file" class="'.$class.'" id="'.$id.'" name="'.$name.'">';
+	if ($label)
+	{
+		$html[] = '</div>';
+	}
+	if ($img)
+	{
+		if ($label)
+		{
+			$html[] = '<div class="col-md-4">';
+		}
+		if ($value)
+		{
+			$html[] = '<img class="preview-img" src="'.$value.'" />';
+		}
+		else
+		{
+			$html[] = '<img class="preview-img hidden" />';
+		}
+		if ($label)
+		{
+			$html[] = '</div>';
+		}
+	}
+	$html[] = '</div>';
+	$html[] = '</div>';
+
+	return implode('', $html);
 }
 
-function checkall()
+/**
+ * show a button
+ */
+function button($name, $options = [])
 {
-        return button('check-all', ['label'=>'Check All','class'=>'float-left']);
+	$value = (isset($options['value']) ? $options['value'] : post($name));
+	$id = (isset($options['id']) ? $options['id'] : slugify($name));
+	$label = (isset($options['label']) ? $options['label'] : deslugify($name));
+	$class = (isset($options['class']) ? $options['class'] : '').' '.$id.' input button submit';
+	$label_width = (isset($options['width']) ? $options['width'] : FORM_LABEL_COL_WIDTH);
+	$value_width = 12-$label_width;
+
+	if (!empty($options['icon']))
+	{
+		$label .= ' <i class="fa '.$options['icon'].' fa-right"></i>';
+	}
+
+	$html = [];
+	$html[] = '<div class="input-wrapper">';
+	$html[] = '<div class="row">';
+
+	if ($label_width)
+	{
+		$html[] = '<div class="col-md-'.$label_width.'"></div>';
+		$html[] = '<div class="col-md-'.$value_width.'">';
+			$html[] = '<button class="'.$class.'" id="'.$id.'" name="'.$name.'" value="'.$value.'">'.$label.'</a>';
+		$html[] = '</div>';
+	}
+	else
+	{
+		$html[] = '<div class="col-12 text-right">';
+			$html[] = '<button class="'.$class.'" id="'.$id.'" name="'.$name.'" value="'.$value.'">'.$label.'</a>';
+		$html[] = '</div>';
+	}
+
+	$html[] = '</div>';
+	$html[] = '</div>';
+
+	return implode('', $html);
 }
 
-function checkbox($name, $data = [])
+/**
+ * toggle buttons
+ */
+function toggle($name, $options = [])
 {
-        $data['type'] = 'checkbox';
-        $data['value'] = (!empty($data['value']) ? $data['value'] : 1);
+	$options['class'] = (isset($options['class']) ? $options['class'] : '').' toggle';
+	$options['toggle'] = true;
 
-        if (!empty($data['checked']))
-        {
-                $data['checked'] = "checked='true'";
-        }
-        else
-        {
-                $name_parts = explode('[', $name);
-                $name_array = array_shift($name_parts);
-                $posted = post($name_array);
-                if (is_array($posted))
-                {
-                        $id = array_pop($name_parts);
-                        $id = substr($id, 0, -1);
-                        if (!empty($posted[$id]))
-                        {
-                                $data['checked'] = "checked='true'";
-                        }
-                }
-                elseif (post($name) == $data['value'])
-                {
-                        $data['checked'] = "checked='true'";
-                }
-        }
-
-        $data = normalize_for_input($name, $data);
-
-        $html = '<div class="checkbox">';
-        $html .= "<input {$data['vars']} />";
-        if (empty($data['nolabel']))
-        {
-                $html .= '<label for="'.$data['id'].'" class="checkbox-label">'.$data['label'].'</label>';
-        }
-        $html .= '</div>';
-
-        return $html;
+	return buttons($name, $options);
 }
 
-function checkboxes($name, $data = [])
+/**
+ * show a list of toggleable buttons
+ */
+function buttons($name, $options = [])
 {
-        $data['type'] = 'checkbox';
+	$values = $options['options'];
+	if (empty($values))
+	{
+		return;
+	}
 
-        $data = normalize_for_input($name, $data);
+	$id = (isset($options['id']) ? $options['id'] : slugify($name));
+	$label = (isset($options['label']) ? $options['label'] : deslugify($name));
+	$class = (isset($options['class']) ? $options['class'] : '').' '.$id.' input button';
+	$toggle = (!empty($options['toggle']));
+	$label_width = (isset($options['width']) ? $options['width'] : FORM_LABEL_COL_WIDTH);
+	$value_width = 12-$label_width;
 
-        $html = '<div class="checkboxes">';
-        if (empty($data['nolabel']))
-        {
-                $html .= '<label for="'.$data['id'].'" class="textbox-label">'.$data['label'].'</label>';
-        }
+	$html = [];
+	$html[] = '<div class="input-wrapper buttons">';
+	if ($label)
+	{
+		$html[] = '<div class="row"><div class="col-md-'.$label_width.' text-right-md-up"><label for="'.$id.'">'.$label.'</label></div><div class="col-md-'.$value_width.'">';
+	}
+	foreach ($values as $option_name => $checked)
+	{
+		$disabled = ($checked === 'DISABLED');
 
-        $html .= '<table class="no-break">';
-        foreach ($data['options'] as $value => $label)
-        {
-                $id = $data['id'].'-'.$value;
+		if (post($name))
+		{
+			$value = (!empty($_POST[$name][$option_name]) || (!empty($_POST[$name]) && $_POST[$name] == $option_name) ? 1 : 0);
+		}
+		else
+		{
+			$value = ($checked ? 1 : 0);
+		}
 
-                $checkbox_data = $data;
-                $checkbox_data['id'] = $id;
-                $checkbox_data['value'] = $value;
-                if (!empty($checkbox_data['checked']) || post($name) === $value)
-                {
-                        $checkbox_data['checked'] = 'true';
-                }
-                else
-                {
-                        unset($checkbox_data['checked']);
-                }
+		$button_class = ($value ? $class : $class.' grey');
 
-                $checkbox_data = normalize_for_input($name, $checkbox_data);
-                $html .= '<tr><td class="middle"><input '.$checkbox_data['vars'].' /></td><td class="middle"><label for="'.$id.'" class="checkbox-label">'.$label.'</label></td></tr>';
-        }
-        $html .= '</table>';
-        $html .= '</div>';
+		if ($value && $toggle)
+		{
+			if (in_array($option_name, ['On','Yes']))
+			{
+				$button_class .= ' green';
+			}
+			elseif (in_array($option_name, ['Off','No']))
+			{
+				$button_class .= ' red';
+			}
+		}
+		if ($disabled)
+		{
+			$button_class .= ' disabled';
+		}
 
-        return $html;
+		$html[] = ' <span class="button-wrapper">';
+		if (!$disabled)
+		{
+			$selected = ($value ? 'checked="true"' : '');
+
+			if (empty($options['toggle']))
+			{
+				$html[] = '<input id="'.$id.'_'.$option_name.'" type="checkbox" class="hidden '.$id.'" name="'.$name.'[]" value="'.$option_name.'" '.$selected.' />';
+			}
+			else
+			{
+				$html[] = '<input id="'.$id.'_'.$option_name.'" type="radio" class="hidden '.$id.'" name="'.$name.'" value="'.$option_name.'" '.$selected.' />';
+			}
+		}
+
+		if (!empty($options['checkbox']))
+		{
+			if ($option_name == 'Yes')
+			{
+				$option_name = '<i class="fa fa-check"></i>';
+			}
+			elseif ($option_name == 'No')
+			{
+				$option_name = '<i class="fa fa-ban"></i>';
+			}
+		}
+
+		$html[] = '<a class="'.$button_class.'">'.$option_name.'</a>';
+		$html[] = '</span>';
+	}
+	if ($label)
+	{
+		$html[] = '</div></div>';
+	}
+	$html[] = '</div>';
+
+	return implode('', $html);
 }
 
-function toggle($name, $data = [])
+/**
+ * retrieve post/get/session/cookie fields in that order
+ * no more "if (!empty($_POST['somename']))" ugliness
+ */
+function post($name = null, $format = '')
 {
-        $data['options'] = ['Off','On'];
+	// return the post as usual if no name given
+	if (empty($name))
+	{
+		return $_POST;
+	}
 
-        return radios($name, $data);
-}
+	// dropdowns are special
+	if (isset($_POST['dropdown']))
+	{
+		foreach ($_POST['dropdown'] as $dropdown_name => $dropdown_values)
+		{
+			$_POST[$dropdown_name] = ($dropdown_values['hidden'] ?: $dropdown_values['visible']);
+		}
+	}
 
-function radios($name, $data = [])
-{
-        $data['type'] = 'radio';
+	// check the following arrays for the $name
+	$check = [];
+	if (isset($_POST)) { $check[] = $_POST; }
+	if (isset($_GET)) { $check[] = $_GET; }
+	if (isset($_SESSION)) { $check[] = $_SESSION; }
+	if (isset($_COOKIE)) { $check[] = $_COOKIE; }
+	foreach ($check as $check_inputs)
+	{
+		if (!empty($check_inputs))
+		{
+			foreach ($check_inputs as $key => $value)
+			{
+				if ($key == $name)
+				{
+					// preg replace if formatting is given
+					if ($format)
+					{
+						$value = preg_replace('/[^'.$format.']/', '', $value);
+					}
 
-        $data = normalize_for_input($name, $data);
+					// return the post var
+					return $value;
+				}
+			}
+		}
+	}
 
-        $html = '<div class="radios">';
-        if (empty($data['nolabel']))
-        {
-                $html .= '<label for="'.$data['id'].'" class="textbox-label">'.$data['label'].'</label>';
-        }
+	// check files
+	if (!empty($_FILES[$name]))
+	{
+		$value = $_FILES[$name];
+		$value['ext'] = explode('.', $_FILES[$name]['name']);
+		$value['ext'] = array_pop($value['ext']);
+		$value['ext'] = str_replace('jpeg', 'jpg', $value['ext']);
 
-        foreach ($data['options'] as $value => $label)
-        {
-                if (empty($GLOBALS['radio_i']))
-                {
-                        $GLOBALS['radio_i'] = 0;
-                }
-                $id = $data['id'].'-'.$value.'-'.$GLOBALS['radio_i']++;
+		return $value;
+	}
 
-                $radio_data = $data;
-                $radio_data['id'] = $id;
-                $radio_data['value'] = $value;
-                if (!empty($radio_data['checked']) || post($name) === $value || (!post($name) && $value == $data['value']))
-                {
-                        $radio_data['checked'] = 'true';
-                }
-                else
-                {
-                        unset($radio_data['checked']);
-                }
-                $radio_data = normalize_for_input($name, $radio_data);
-
-                $html .= '<div class="radio">';
-                $html .= '<input '.$radio_data['vars'].' />';
-                $html .= '<label for="'.$id.'" class="radio-label">'.$label.'</label>';
-                $html .= '</div>';
-        }
-
-        $html .= '</div>';
-
-        return $html;
-}
-
-function upload($name, $data = [], $multiple = false)
-{
-        $data['type'] = 'file';
-        $multiple = ($multiple ? ' multiple' : '');
-        $data = normalize_for_input($name, $data);
-
-        $html = '<div class="textbox">';
-        if (empty($data['nolabel']))
-        {
-                $html .= '<label for="'.$data['id'].'" class="textbox-label">'.$data['label'].':</label>';
-        }
-        $html .= '<input '.$data['vars'].$multiple.' />';
-        $html .= '</div>';
-        return $html;
-}
-
-function normalize_for_input($name, $data = [])
-{
-        // assign a label if not set already
-        if (empty($data['label']))
-        {
-                $data['label'] = ucwords(deslugify(slugify($name)));
-        }
-
-        // give it a good name
-        $data['name'] = (isset($data['name']) ? $data['name'] : preg_replace('/[^-[]_a-zA-Z0-9]/', '', $name));
-
-        // every input needs an id
-        if (empty($data['id']))
-        {
-                $data['id'] = str_replace('_', '-', $data['name']);
-        }
-
-        // populate with pre-submitted form values
-        // if not already submitted, use default value if specified
-        // do not give all radios this value since they have the same name
-        if (empty($data['novalue']))
-        {
-                if (post($name) && (empty($data['type']) || $data['type'] != 'radio'))
-                {
-                        $data['value'] = post($name);
-                }
-                elseif (!isset($data['value']))
-                {
-                        $data['value'] = '';
-                }
-        }
-
-        // give all inputs the input css class
-        if (!isset($data['class']))
-        {
-                $data['class'] = 'input';
-        }
-        else
-        {
-                $data['class'] = 'input '.$data['class'];
-        }
-
-        // append the name to the class
-        $data['class'] .= ' '.slugify($data['name']).'';
-
-        // clear up classes
-        $unique_classes = [];
-        $classes = explode(' ', $data['class']);
-        foreach ($classes as $class)
-        {
-                $unique_classes[$class] = $class;
-        }
-        $data['class'] = implode(' ', $unique_classes);
-
-        // add onclick js event if url is specified
-        if (isset($data['url']))
-        {
-                if (empty($data['onclick']))
-                {
-                        $data['onclick'] = '';
-                }
-                $data['onclick'] .= 'window.location.href=BASE_URL+"'.$data['url'].'";';
-                unset($data['url']);
-        }
-
-        // build all variables for the element
-        unset($data['vars']);
-        $vars = [];
-        foreach ($data as $html_key => $html_value)
-        {
-                if (is_string($html_value) || is_numeric($html_value))
-                {
-                        $vars[] = $html_key.'="'.trim(strip_tags($html_value)).'"';
-                }
-        }
-        $vars = implode(' ', $vars);
-        $data['vars'] = $vars;
-
-        return $data;
-}
-
-function color($name, $data = [])
-{
-        if (post($name))
-        {
-                $rgb = post($name);
-        }
-        elseif (!empty($data['value']))
-        {
-                $rgb = $data['value'];
-        }
-        else
-        {
-                $rgb = 'transparent';
-        }
-        return '
-                <div class="color" style="background-color:'.$rgb.';">
-                        <input type="hidden" name="'.$name.'" id="'.$name.'" class="'.str_replace('_', '-', $name).'" value="'.$rgb.'" />
-                </div>
-        ';
+	return '';
 }
