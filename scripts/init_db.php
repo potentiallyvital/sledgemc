@@ -55,7 +55,7 @@ CREATE TABLE <?=SLEDGEMC_ACCOUNT_TABLE;?> (
 
 CREATE TABLE <?=SLEDGEMC_LOGIN_TABLE;?> (
 	email varchar(64),
-	password_hash text
+	password text
 ) INHERITS (<?=SLEDGEMC_BASE_TABLE;?>);
 
 =================================================================
